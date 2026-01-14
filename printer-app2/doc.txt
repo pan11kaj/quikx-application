@@ -1,0 +1,5 @@
+################# Database integration in the applicatioin#########################################
+
+here we are using mysql database and the sqlmodel library which is based on top of the pydantics and SqlAlchemy
+
+-- pip install sqlmodel

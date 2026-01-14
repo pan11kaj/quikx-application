@@ -1,0 +1,15 @@
+# installation pip install pywin32
+
+
+# the shellExecute method:
+win32api.ShellExecute(
+    hwnd, -> 0 means no parent window
+    operation, ->[open , print, printto, runas(run as admin)] -> print,printto->default,specific
+    file,
+    parameters, -> printer name
+    directory, -> which directory are you in . current
+    show_cmd -> 0 for silent printing
+)
+
+
+# documentation for sumtrapdf:

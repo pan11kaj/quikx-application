@@ -1,0 +1,18 @@
+.mainContainer{
+	position: absolute;
+	top: 1px;
+	width: 100vw;
+	height: 100vh;
+	background-color: whitesmoke;
+	 opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.closeButton{
+	position: fixed;
+	right: 12px;
+	top: 10px;
+}
+.show {
+  opacity: 1;
+}
