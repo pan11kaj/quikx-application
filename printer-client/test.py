@@ -101,3 +101,8 @@ async def run():
 
 import requests
 # res = requests.post("http://localhost:8000/printers/queue-controller/12lr4ipekgwva8ls",json={"queue_list":[]})
+
+l = [1,2,3,4]
+
+l.pop(0)
+print(l)

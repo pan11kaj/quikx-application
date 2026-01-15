@@ -53,11 +53,11 @@ class ConnectedClientPrinterManager:
     async def connect(self, license_id,websocket: WebSocket):
         await websocket.accept()
         self.active_connections[license_id] = websocket
-
+        
     async def disconnect(self, license_id,websocket: WebSocket):
-        self.active_connections.pop(license_id)
-        if  websocket.client_state == WebSocketState.CONNECTED:
-
+        self.active_connections.pop(license_id, None)
+        print("SJFJsdgdfghdf ")
+        if websocket.client_state == WebSocketState.CONNECTED:
             await websocket.close()
 
     async def connect_client(self, license_id,websocket: WebSocket):
@@ -67,12 +67,24 @@ class ConnectedClientPrinterManager:
         self.active_clients[license_id].append(websocket)
 
     async def disconnect_client(self, license_id,websocket: WebSocket):
-        self.active_clients[license_id].remove(websocket)
-        if  websocket.client_state == WebSocketState.CONNECTED:
+        if license_id in self.active_clients and websocket in self.active_clients[license_id]:
+            self.active_clients[license_id].remove(websocket)
+        if websocket.client_state == WebSocketState.CONNECTED:
             await websocket.close()
     
     async def send_personal_message(self, data, printer_name:str):
-        await self.active_connections[printer_name].send_json(data)
+        ws = self.active_connections.get(printer_name)
+        if not ws:
+            print(f"No active websocket for {printer_name}")
+            return
+        
+        if ws.client_state != WebSocketState.CONNECTED:
+            print(f" WebSocket not connected: {ws.client_state}")
+            self.active_connections.pop(printer_name, None)
+            return
+        
+        await ws.send_text(json.dumps(data))
+        
 
     async def broadcast(self, message: str): # to all
         for connection in self.active_connections:
@@ -129,43 +141,52 @@ async def queue_controller(client_license:str,data:QueueList):
 ###########################Connection of different printers client:
 @router.websocket("/connection/{client_license}/{client_password}")
 async def connect_to_server(websocket:WebSocket, client_license:str, client_password:str):
+    
     await printers.connect(client_license, websocket)
+
     if (not isValidPrinter(client_license)):
         print("printer is not valid")
-        await printers.disconnect(client_license,websocket)
-        raise  WebSocketException(1008,"license is not valid")
+        await printers.disconnect(client_license, websocket)
+        raise WebSocketException(1008, "AUTH FAILED")
+    
     with Session(engine) as session:
         query = select(Users).where(Users.url_endpoint == client_license)
         user = session.exec(query).one_or_none()
-        if(user == None):
-            print("User not found")
-            await printers.disconnect(client_license,websocket)
-            raise  WebSocketException(1008,"license is not valid")
-        else:
-            if(user.license_password != client_password):
-                await printers.disconnect(client_license,websocket)
 
-                raise  WebSocketException(1008,"license is not valid")
+        if(user == None):
+            print(client_license, client_password, "::LSLLS")
+            print("User not found")
+            await printers.disconnect(client_license, websocket)
+            raise WebSocketException(1008, "AUTH FAILED")
+
+        if(user.license_password != client_password):
+            print('sdjkfhsdhgjkdf goisdfgsdfoguiodf gdf')
+            await printers.disconnect(client_license, websocket)
+            raise WebSocketException(1008, "AUTH FAILED")
+ 
     try:
-        socket:WebSocket = printers.active_connections[client_license]
+        socket: WebSocket = printers.active_connections[client_license]
         
         while True:
-
             payload = await socket.receive_text()
             event = json.loads(payload).get("event")
-            data:dict = json.loads(payload).get("data")
+            data: dict = json.loads(payload).get("data")
             match (event):
                 case "queue_update":
                     printers.queue[client_license] = data.get("queue")
-                    for ws in printers.active_clients[client_license]:
-                        await ws.send_json({"queue":printers.queue[client_license]})
+                    print(data)
+                    file_id:int|None = data.get("printed_file_id")
+                    if client_license in printers.active_clients:
+                        for ws in printers.active_clients[client_license]:
+                            if ws.client_state == WebSocketState.CONNECTED:
+                                await ws.send_json({"queue": printers.queue[client_license],"success_file_id":file_id})
 
-    except WebSocketDisconnect as e:
-        print(e)
-        await printers.disconnect(client_license,websocket)
+    except WebSocketDisconnect:
+        print('WebSocket disconnected')
+        await printers.disconnect(client_license, websocket)
     except Exception as e:
-        print(e)
-        # await printers.disconnect(client_license,websocket)
+        print(f"Error: {e}")
+        # await printers.disconnect(client_license, websocket)
 @router.get("/")
 def Index(printer_name:str):
     if(not isValidPrinter(printer_name)):
@@ -177,8 +198,10 @@ async def upload_file_handler(printer_name:str,file:UploadFile):
     if(not isValidPrinter(printer_name)):
         raise HTTPException(status_code=404, detail="Printer not found with these address")
     # ext,no_of_pages = 
-
+    # print("S")
     upload_folder_path = os.environ.get("FILES_PATH")
+    print("S")
+
     file_id   = generate_unique_file_id()
     extension = file.filename.rsplit(".")[len(file.filename.rsplit("."))-1]
     file_name = f"{upload_folder_path}/{file_id}.{extension}"
@@ -208,7 +231,10 @@ async def upload_file_handler(printer_name:str,file:UploadFile):
             "file_id":file_id
             }
         }
+        print(payload)
+
         await printers.send_personal_message(payload,printer_name)
+
         return {
                     "message": "File uploaded!!",
                     "no_of_pages":no_of_pages,
@@ -290,7 +316,10 @@ async def queue_clients(printer_name:str,socket:WebSocket):
         await printers.disconnect_client(printer_name,socket)
         raise  WebSocketException(1008,"license is not valid")
     try:
+        if socket.client_state == WebSocketState.CONNECTED:
+            await socket.send_json({"queue": printers.queue[printer_name]})
         while True:
+
             d = await socket.receive_text()
     except WebSocketDisconnect as e:
         print("DISCOENN")

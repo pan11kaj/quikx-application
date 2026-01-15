@@ -57,23 +57,26 @@ background: linear-gradient(
 
 .choose_button{
     font-family: 'Roboto', sans-serif;
-    background-color: red;
+    background: linear-gradient(135deg, #0099cc, #00d4ff);
     color: white;
     border: none;
     padding: 10px 20px;
     font-size: 16px;
     border-radius: 5px;
     cursor: pointer;
+    transition: transform 0.1s ease, box-shadow 0.1s ease;
 }
 
 .uploadingButtons{
     margin: 10px;
-    border: 3px solid  cyan;
+    border: 3px solid #00d4ff;
     border-radius: 10px;
     padding: 10px;
-    color: whitesmoke;
-      transition: transform 0.1s ease, box-shadow 0.1s ease;
+    color: #e0e0e0;
+    background-color: #1e1e1e;
+    transition: transform 0.1s ease, box-shadow 0.1s ease;
     font-size: x-large;
+    cursor: pointer;
 }
 .uploadingButtons:active{
     transform: scale(1.2);

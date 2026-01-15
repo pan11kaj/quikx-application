@@ -6,18 +6,21 @@ import imgImage from "./imgImage.png";
 import FileViewModal from "./Modal";
 import axios from "axios";
 import toast, { Toaster } from "react-hot-toast";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 function Home() {
   const inputRef = useRef(null);
   const [file, setFile] = useState(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [searchParams] = useSearchParams()
   const navigate = useNavigate()
   const [progressUpload, setProgressUpload] = useState(0);
-  // useEffect(()=>{
-  //     toast.loading("uploading your file...",{style:{
-  //       width:"100vw"
-  //     }})
-  //   },[])
+  useEffect(() => {
+    // toast.loading("uploading your file...",{style:{
+    // width:"100vw"
+    // }})
+    
+
+  }, [])
 
   const uploadFile = async () => {
     const formData = new FormData();
@@ -33,7 +36,7 @@ function Home() {
           setProgressUpload(percent);
         }
       },);
-      await start_payment(response.data.amount,response.data.id, printer_name, server_name);
+      await start_payment(response.data.amount, response.data.id, printer_name, server_name, response.data.no_of_pages);
     } catch (error) {
       console.log(error);
     }
@@ -51,38 +54,38 @@ function Home() {
     });
   }
 
-  const start_payment = async (amount,id, printer_name, server_name) => {
+  const start_payment = async (amount, id, printer_name, server_name, no_of_pages) => {
     const res = await loadRazorpay();
     if (!res) {
       alert("Some error occured from your side!! please reload the site");
     }
     const orderResponse = await axios.post(server_name + `/printers/create-order/${amount}`, null, { params: { printer_name: printer_name } });
     console.log(id)
-    
+
     const options = {
       key: process.env.REACT_APP_RAZORPAY_ID,
       amount: orderResponse.data.amount,
       currency: "INR",
-      name: "Pay to Quikx",
+      name: "Pay to QuikX",
       description: "charge for printouts",
       order_id: orderResponse.data.order_id,
       handler: async function (response) {
-        try{
-        const response2 = await axios.post(server_name+ `/printers/verify/${id}/${amount}`,null,{
-          params:{
-            printer_name:printer_name,
-            razorpay_payment_id:response.razorpay_payment_id,
-            razorpay_order_id:response.razorpay_order_id,
-            razorpay_signature:response.razorpay_signature
+        try {
+          const response2 = await axios.post(server_name + `/printers/verify/${id}/${amount}`, null, {
+            params: {
+              printer_name: printer_name,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_signature: response.razorpay_signature
+            }
+          });
+
+          if (response2.data.event === "successful") {
+            navigate(`/print-status?printer_name=${printer_name}&file_id=${id}&xxd=${no_of_pages}&xxy=${orderResponse.data.amount}`)
           }
-        });
-        
-        if(response2.data.event === "successful"){
-          navigate(`/print-status?printer_name=${printer_name}`)
+        } catch (err) {
+          console.error("Error in verifying payment:", err.response?.data || err.message);
         }
-      }catch (err) {
-    console.error("Error in verifying payment:", err.response?.data || err.message);
-  }
       },
       prefill: {
         name: "Pankaj Sahu",

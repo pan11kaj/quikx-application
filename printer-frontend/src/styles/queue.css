@@ -1,15 +1,15 @@
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Manrope:wght@400;500;600&display=swap');
 
 :root {
-  --color-primary: #2d1810;
-  --color-secondary: #8b4513;
-  --color-accent: #d4a574;
-  --color-background: #faf8f5;
-  --color-surface: #ffffff;
-  --color-text: #2d1810;
-  --color-text-muted: #6b5d54;
-  --color-border: #e8dfd5;
-  --color-pulse: #c17d3a;
+  --color-primary: #1a1a1a;
+  --color-secondary: #3a7ca5;
+  --color-accent: #00d4ff;
+  --color-background: #0d0d0d;
+  --color-surface: #1e1e1e;
+  --color-text: #e0e0e0;
+  --color-text-muted: #a0a0a0;
+  --color-border: #333333;
+  --color-pulse: #00eaff;
   
   --shadow-sm: 0 1px 2px rgba(43, 32, 28, 0.05);
   --shadow-md: 0 4px 12px rgba(45, 24, 16, 0.08);
@@ -45,7 +45,7 @@ body {
 .queue-header {
   position: relative;
   padding: 4rem 2rem 3rem;
-  background: linear-gradient(135deg, #2d1810 0%, #4a2f1f 100%);
+  background: linear-gradient(135deg, #1a1a1a 0%, #2d3a4f 100%);
   overflow: hidden;
   margin-bottom: 2rem;
 }
@@ -61,8 +61,8 @@ body {
       45deg,
       transparent,
       transparent 35px,
-      rgba(212, 165, 116, 0.03) 35px,
-      rgba(212, 165, 116, 0.03) 70px
+      rgba(0, 212, 255, 0.05) 35px,
+      rgba(0, 212, 255, 0.05) 70px
     );
   pointer-events: none;
 }
@@ -81,7 +81,7 @@ body {
 
 .queue-subtitle {
   font-size: 1.1rem;
-  color: rgba(212, 165, 116, 0.8);
+  color: rgba(0, 212, 255, 0.8);
   font-weight: 500;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -94,10 +94,10 @@ body {
   gap: 2rem;
   margin-top: 2rem;
   padding: 1.5rem 2rem;
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(0, 212, 255, 0.05);
   border-radius: 16px;
   backdrop-filter: blur(10px);
-  border: 1px solid rgba(212, 165, 116, 0.2);
+  border: 1px solid rgba(0, 212, 255, 0.2);
   position: relative;
   animation: fadeInUp 0.8s cubic-bezier(0.4, 0, 0.2, 1) 0.2s backwards;
 }
@@ -118,7 +118,7 @@ body {
 
 .stat-label {
   font-size: 0.75rem;
-  color: rgba(212, 165, 116, 0.7);
+  color: rgba(0, 212, 255, 0.7);
   text-transform: uppercase;
   letter-spacing: 0.1em;
   font-weight: 600;
@@ -126,7 +126,7 @@ body {
 
 .stat-divider {
   width: 1px;
-  background: linear-gradient(to bottom, transparent, rgba(212, 165, 116, 0.3), transparent);
+  background: linear-gradient(to bottom, transparent, rgba(0, 212, 255, 0.3), transparent);
 }
 
 /* Queue List Styles */
@@ -159,7 +159,7 @@ body {
   left: 0;
   width: 4px;
   height: 100%;
-  background: linear-gradient(to bottom, var(--color-accent), var(--color-secondary));
+  background: linear-gradient(to bottom, #00d4ff, #0099cc);
   transform: scaleY(0);
   transform-origin: top;
   transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
@@ -180,11 +180,11 @@ body {
   width: 56px;
   height: 56px;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--color-secondary), var(--color-accent));
+  background: linear-gradient(135deg, #0099cc, #00d4ff);
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 12px rgba(139, 69, 19, 0.25);
+  box-shadow: 0 4px 12px rgba(0, 212, 255, 0.25);
   transition: var(--transition-bounce);
 }
 
@@ -236,26 +236,55 @@ body {
   position: relative;
 }
 
+.pulse-left-arrow {
+  position: relative;
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pulse-left-arrow::before {
+  content: '';
+  position: absolute;
+  left: 2px;
+  width: 12px;
+  height: 2px;
+  background: var(--color-pulse);
+  animation: leftArrowSlide 1.4s ease-in-out infinite;
+}
+
+.pulse-left-arrow::after {
+  content: '';
+  position: absolute;
+  left: 2px;
+  width: 8px;
+  height: 8px;
+  border-left: 2px solid var(--color-pulse);
+  border-bottom: 2px solid var(--color-pulse);
+  transform: translate(-3px, 0) rotate(45deg);
+  animation: leftArrowSlide 1.4s ease-in-out infinite;
+}
+
 .pulse-dot {
+  position: relative;
   width: 12px;
   height: 12px;
   border-radius: 50%;
   background: var(--color-pulse);
-  position: relative;
-  animation: pulse 2s ease-in-out infinite;
+  box-shadow: 0 0 8px rgba(0, 234, 255, 0.55);
+  animation: pulseDot 1.5s ease-in-out infinite;
 }
 
-.pulse-dot::before {
+.pulse-dot::after {
   content: '';
   position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 100%;
-  height: 100%;
+  inset: -6px;
+  border: 2px solid rgba(0, 234, 255, 0.5);
   border-radius: 50%;
-  background: var(--color-pulse);
-  animation: ripple 2s ease-in-out infinite;
+  opacity: 0.6;
+  animation: pulseRing 1.8s ease-out infinite;
 }
 
 /* Footer Styles */
@@ -315,23 +344,51 @@ body {
   }
 }
 
-@keyframes pulse {
-  0%, 100% {
-    opacity: 1;
+@keyframes pulseDot {
+  0% {
+    transform: scale(0.95);
+    opacity: 0.85;
+    box-shadow: 0 0 8px rgba(0, 234, 255, 0.4);
   }
   50% {
-    opacity: 0.5;
+    transform: scale(1.1);
+    opacity: 1;
+    box-shadow: 0 0 14px rgba(0, 234, 255, 0.8);
+  }
+  100% {
+    transform: scale(0.95);
+    opacity: 0.85;
+    box-shadow: 0 0 8px rgba(0, 234, 255, 0.4);
   }
 }
 
-@keyframes ripple {
+@keyframes pulseRing {
   0% {
-    transform: translate(-50%, -50%) scale(1);
+    transform: scale(0.75);
+    opacity: 0.6;
+  }
+  70% {
+    transform: scale(1.6);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1.6);
+    opacity: 0;
+  }
+}
+
+@keyframes leftArrowSlide {
+  0% {
+    transform: translateX(2px);
+    opacity: 0.65;
+  }
+  50% {
+    transform: translateX(-3px);
     opacity: 1;
   }
   100% {
-    transform: translate(-50%, -50%) scale(2.5);
-    opacity: 0;
+    transform: translateX(2px);
+    opacity: 0.65;
   }
 }
 
@@ -394,4 +451,37 @@ body {
   .position-number {
     font-size: 1.1rem;
   }
+}
+
+/* Connection Status */
+.connection-status {
+  padding: 1rem 2rem;
+  text-align: center;
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.connection-status h2 {
+  font-size: 1rem;
+  color: var(--color-text-muted);
+  font-weight: 500;
+}
+
+/* Empty Queue State */
+.empty-queue {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  text-align: center;
+  background: var(--color-surface);
+  border-radius: 12px;
+  margin: 2rem;
+  border: 2px dashed var(--color-border);
+}
+
+.empty-queue p {
+  font-size: 1.2rem;
+  color: var(--color-text-muted);
+  font-weight: 500;
 }

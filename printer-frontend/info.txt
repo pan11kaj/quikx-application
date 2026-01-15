@@ -1,0 +1,1 @@
+docker run  -v /home/pnkj/project-deploy/quikx-application/printer-app2/backend_data/db:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=tt7s3bvije -e MYSQL_DATABASE=printer_db -p 3306:3306 -d mysql

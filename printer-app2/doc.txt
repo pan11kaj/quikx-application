@@ -3,3 +3,11 @@
 here we are using mysql database and the sqlmodel library which is based on top of the pydantics and SqlAlchemy
 
 -- pip install sqlmodel
+
+
+
+vacyrxp8292boso2
+
+123
+
+amount and nuo

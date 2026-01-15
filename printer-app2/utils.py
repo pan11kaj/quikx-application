@@ -6,7 +6,7 @@ from .db import engine
 from datetime import datetime
 from sqlalchemy import func
 from fastapi import HTTPException
-import PyPDF2
+import PyPDF2 
 
 def generate_license(session:Session):
     license:str = ""
@@ -61,4 +61,7 @@ def get_no_of_pages(file_name:str):
         with open(file_name,"rb") as f:
             reader = PyPDF2.PdfReader(f)
             return len(reader.pages)
-    return 4
+    else:
+        with open(file_name,"rb") as f:
+            reader = PyPDF2.PdfReader(f)
+            return len(reader.pages)

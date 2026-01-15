@@ -39,7 +39,7 @@ app.add_middleware(CORSMiddleware, allow_origins=origins,
     allow_methods=["*"],
     allow_headers=["*"])
 
-app.mount("/static-files",StaticFiles(directory=r'D:\Mega Projects\printer-app2\backend_data\files_uploaded' ),"files") 
+app.mount("/static-files",StaticFiles(directory=static_files_dir ),"files") 
 
 
 #########configuring the redis database connection
