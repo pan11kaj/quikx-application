@@ -1,0 +1,4 @@
+path ~/project-deploy/quikx-application
+
+in printer-app2 dir create a backend_data folder inside that db and files_uploaded also
+

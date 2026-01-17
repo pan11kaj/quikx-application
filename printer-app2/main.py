@@ -2,12 +2,12 @@ from fastapi import FastAPI,Response
 from dotenv import load_dotenv
 import os
 from datetime import datetime, timedelta
-from .models import Users
+from .models import Users,Sirpur_Review,Sirpur_Report
 from sqlmodel import Session,select
 from .db import init_db,engine
 from .routers import printers
 from contextlib import asynccontextmanager
-from .configs.dataModels import RegisterationModel
+from .configs.dataModels import RegisterationModel,SirpurReviewModel,SirpurReportModel
 from .utils import generate_license, generate_url
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
@@ -85,8 +85,40 @@ def index(data:RegisterationModel,response:Response):
                 "message":"Email is not valid"
             }
 
-@app.get("/test")
-def test():
-    return {
 
-    }
+@app.post("/sirpur-review")
+def sirpur_review(data:SirpurReviewModel,response:Response):
+    try:
+        with Session(engine) as session:
+            new_suggestion = Sirpur_Review(name=data.name,email=data.email,feedback=data.feedback,suggestion=data.suggestions)
+            session.add(new_suggestion)
+            session.commit()
+        response.status_code = 200
+        return {
+            "message":"submitted"
+        }
+            
+
+    except Exception as e:
+        response.status_code = 403
+        return {
+            "message":"failed"
+        }
+@app.post("/sirpur-report")
+def sirpur_report(data:SirpurReportModel,response:Response):
+    try:
+        with Session(engine) as session:
+            new_report = Sirpur_Report(file_id=data.file_id,problem=data.problem,phone=data.phone)
+            session.add(new_report)
+            session.commit()
+        response.status_code = 200
+        return {
+            "message":"submitted"
+        }
+            
+
+    except Exception as e:
+        response.status_code = 403
+        return {
+            "message":"failed"
+        }

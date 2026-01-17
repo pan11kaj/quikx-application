@@ -9,7 +9,7 @@ from ..db import engine,redis,redis_ready
 from ..utils import isValidPrinter,generate_unique_file_id,get_no_of_pages
 from ..db import redis
 import aiofiles
-import razorpay
+import razorpay,datetime
 import json
 from ..configs.dataModels import QueueList
 from ..models import Uploaded_Files,Users
@@ -180,6 +180,15 @@ async def connect_to_server(websocket:WebSocket, client_license:str, client_pass
                         for ws in printers.active_clients[client_license]:
                             if ws.client_state == WebSocketState.CONNECTED:
                                 await ws.send_json({"queue": printers.queue[client_license],"success_file_id":file_id})
+                                if file_id is not None:
+                                    with Session(engine) as session:
+                                        query = select(Uploaded_Files).where(Uploaded_Files.file_id == file_id)
+                                        file_uploaded = session.exec(query).one_or_none()
+                                        file_uploaded.status = "File Printed Successfully"
+                                        file_uploaded.time_and_date = datetime.datetime.now()
+                                        session.add(file_uploaded)
+                                        session.commit()
+                                        session.refresh(file_uploaded)
 
     except WebSocketDisconnect:
         print('WebSocket disconnected')
@@ -239,7 +248,8 @@ async def upload_file_handler(printer_name:str,file:UploadFile):
                     "message": "File uploaded!!",
                     "no_of_pages":no_of_pages,
                     "amount":amount,
-                    "id":file_id
+                    "id":file_id,
+                    "file_name":file.filename
                 }
     except Exception as e:
         print(e)
@@ -326,6 +336,10 @@ async def queue_clients(printer_name:str,socket:WebSocket):
         await printers.disconnect_client(printer_name,socket)
     except Exception as e:
         await printers.disconnect_client(printer_name,socket)
+
+
+
+
 # queue manager
 
 # rooms: Dict[str, list[WebSocket]] = {}

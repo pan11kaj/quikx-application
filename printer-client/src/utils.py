@@ -10,15 +10,15 @@ def list_printers(conn):
 
 
 
-if __name__ == "__main__":
-    printers = list_printers()
-    for name, attrs in printers.items():
-        print("Printer name:", name)
-        print("  Description:", attrs.get("printer-info"))
-        print("  Location:", attrs.get("printer-location"))
-        print("  State:", attrs.get("printer-state"))
-        print("  Is Default:", attrs.get("printer-is-default"))
-        print("-" * 40)
+# if __name__ == "__main__":
+#     printers = list_printers()
+#     for name, attrs in printers.items():
+#         print("Printer name:", name)
+#         print("  Description:", attrs.get("printer-info"))
+#         print("  Location:", attrs.get("printer-location"))
+#         print("  State:", attrs.get("printer-state"))
+#         print("  Is Default:", attrs.get("printer-is-default"))
+#         print("-" * 40)
 def get_default_printer(conn):
     return conn.getDefault()
 
@@ -239,6 +239,7 @@ def job_canceled(job_id, state):
 
 def job_aborted(job_id, state):
     print(f"❌ Job {job_id} ABORTED")
+
 def is_cups_job_done(job_id: int):
     """
     Check whether a CUPS job is finished.
@@ -294,6 +295,63 @@ def print_file(file_id, file, app, ws, specifications={}):
     """
     Print a file and notify via websocket when done.
     Uses asyncio.run_coroutine_threadsafe to send from this sync thread.
+
+    {'file_id': 116, 'downloaded': True, 'file_name': '116.pdf'}
+    """
+    conn = cups.Connection()  # thread-safe connection
+    printer = get_default_printer(conn)
+
+    printers = conn.getPrinters()
+    status = printers[printer]["printer-state"]
+    # data structure of specification:
+    """
+    specifications:
+    [
+        {'page':'2', copies:n} .... n
+    ]
+    """
+
+    # Safety check for application-context
+    while True:
+        if status == 3:
+            break
+    job_id = conn.printFile(printer, file, f"{file_id}", specifications)
+
+    while True:
+        done, state = is_cups_job_done(job_id)
+        if done and state=="COMPLETED":
+            print(f"Job {job_id} finished with state: {state}")
+
+
+            status = printers[printer]["printer-state"]
+
+            # breaker for the system:
+            if status ==3:
+                app.queue.pop(0)
+
+                os.remove(file)
+                msg = json.dumps({
+                    "event":"queue_update",
+                                        "data":{ "queue":app.queue,"printed_file_id":file_id} # file id is integer here
+                })
+                try:
+                    future = asyncio.run_coroutine_threadsafe(ws.send(msg), app.loop)
+                    future.result(timeout=5)  # wait up to 5s for send to complete
+                    
+                    return 
+                except Exception as e:
+                    print(f"Failed to send job_finished over ws: {e}")
+                    return
+        time.sleep(1)  # poll interval
+
+
+
+def print_file_2(files_path, app, ws):
+    """
+    Print a file and notify via websocket when done.
+    Uses asyncio.run_coroutine_threadsafe to send from this sync thread.
+
+    {'file_id': 116, 'downloaded': True, 'file_name': '116.pdf'}
     """
     conn = cups.Connection()  # thread-safe connection
     printer = get_default_printer(conn)
@@ -304,27 +362,36 @@ def print_file(file_id, file, app, ws, specifications={}):
         {'page':'2', copies:n} .... n
     ]
     """
-    job_id = conn.printFile(printer, file, f"{file_id}", specifications)
 
+    # Safety check for application-context
+    # data = app.queue[0]
+    # job_id = conn.printFile(printer, f"{files_path}{data.file_name}", f"{data.file_id}", {})
+    printed_first_in_queue= False
     while True:
+        data = app.queue[0]
+        file_name = data.file_name
+        file_id = data.file_id
+        job_id = conn.printFile(printer, f"{files_path}{file_name}", f"{file_id}", {})
+
         done, state = is_cups_job_done(job_id)
         if done and state=="COMPLETED":
             print(f"Job {job_id} finished with state: {state}")
             app.queue.pop(0)
-            os.remove(file)
+            os.remove(f"{files_path}{file_name}")
             msg = json.dumps({
                 "event":"queue_update",
-                                       "data":{ "queue":app.queue,"printed_file_id":file_id} # file id is integer here
+                                       "data":{ "queue":app.queue,"printed_file_id":data.file_id} # file id is integer here
             })
             try:
                 future = asyncio.run_coroutine_threadsafe(ws.send(msg), app.loop)
                 future.result(timeout=5)  # wait up to 5s for send to complete
                 
-                return 
             except Exception as e:
                 print(f"Failed to send job_finished over ws: {e}")
-                return
+
+        
         time.sleep(1)  # poll interval
+
 
 
 """
@@ -361,4 +428,16 @@ def download_file(server_name,file_name):
 
 
 if __name__ == "__main__":
-    pass
+    conn = cups.Connection()
+    default_printer = conn.getDefault()
+    files_path = os.environ.get("upload_file_path")
+    job_id = conn.printFile(        default_printer, f"{files_path}{"1093.pdf"}","1",    {}  )
+    job_id2 = conn.printFile(        default_printer, f"{files_path}{"1093.pdf"}",'2',    {}  )
+    job_id3 = conn.printFile(        default_printer, f"{files_path}{"1093.pdf"}",'3',    {}  )
+    job_id4 = conn.printFile(        default_printer, f"{files_path}{"1093.pdf"}",'4',    {}  )
+    job_id5 = conn.printFile(        default_printer, f"{files_path}{"1093.pdf"}",'5',    {}  )
+    print(job_id)
+    print(job_id2)
+    print(job_id3)
+    print(job_id4)
+    print(job_id5)

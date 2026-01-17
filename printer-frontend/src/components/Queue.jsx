@@ -16,7 +16,7 @@ export default function Queue() {
     const [queueList, setQueueList] = useState([]);
     const [searchParams] = useSearchParams();
     const [current_file_id, set_current_file_id] = useState(null)
-    const { sendJsonMessage, lastMessage, readyState } = useWebSocket(`ws://localhost:8000/printers/queue-clients?printer_name=${searchParams.get("printer_name")}`);
+    const { sendJsonMessage, lastMessage, readyState } = useWebSocket(`${process.env.REACT_APP_WEBSOCKET}/printers/queue-clients?printer_name=${searchParams.get("printer_name")}`);
     const navigate = useNavigate()
 
     useEffect(() => {
@@ -66,7 +66,7 @@ export default function Queue() {
     const matchFileId = (item) => current_file_id === item.file_id.toString()
     return (
         <div className="queue-container">
-            <div className="queue-header">
+            <div className="queue-header" style={{width:"100vw"}}>
                 <div className="header-background"></div>
                 <h1 className="queue-title" style={{ textAlign: "center" }}>Printing Status</h1>
             </div>

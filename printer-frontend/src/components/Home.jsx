@@ -6,26 +6,49 @@ import imgImage from "./imgImage.png";
 import FileViewModal from "./Modal";
 import axios from "axios";
 import toast, { Toaster } from "react-hot-toast";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 function Home() {
   const inputRef = useRef(null);
   const [file, setFile] = useState(null);
+  const [fileUrl, setFileUrl] = useState("");
+  const [showFileContent, setShowFileContent] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
+  const [printer_name,set_printer_name] = useState(()=>searchParams.get("printer_name"))
   const [progressUpload, setProgressUpload] = useState(0);
-  useEffect(() => {
-    // toast.loading("uploading your file...",{style:{
-    // width:"100vw"
-    // }})
-    
 
-  }, [])
+  useEffect(() => {
+const ids = localStorage.getItem("file_ids");
+
+    if(ids === null){
+           localStorage.setItem("file_ids",JSON.stringify([])) 
+           
+          }
+    const fetchData = async () => {
+
+      const url = process.env.REACT_APP_SERVER_NAME
+      try {
+        const response = await axios.post(url + "/printers/check-valid-printer", null, { params: { printer_name: printer_name } })
+        if (response.status !== 404) {
+          const isValid = response.data.valid
+          return isValid;
+        }
+      } catch (err) {
+        return false
+      }
+    }
+    fetchData().then((data) => {
+      if (data === false) {
+        navigate("/404")
+      }
+    });
+            
+  }, []);
 
   const uploadFile = async () => {
     const formData = new FormData();
     formData.append("file", file);
-    const printer_name = process.env.REACT_APP_PRINTER_NAME;
     const server_name = process.env.REACT_APP_SERVER_NAME;
     console.log(server_name)
 
@@ -34,9 +57,10 @@ function Home() {
         headers: { "Content-Type": "multipart/form-data" }, params: { printer_name: printer_name }, onUploadProgress: (ProgressEvent) => {
           const percent = Math.round(ProgressEvent.loaded * 100) / ProgressEvent.total;
           setProgressUpload(percent);
+          console.log(percent)
         }
       },);
-      await start_payment(response.data.amount, response.data.id, printer_name, server_name, response.data.no_of_pages);
+      await start_payment(response.data.amount, response.data.id, printer_name, server_name, response.data.no_of_pages,response.data.file_name);
     } catch (error) {
       console.log(error);
     }
@@ -54,7 +78,7 @@ function Home() {
     });
   }
 
-  const start_payment = async (amount, id, printer_name, server_name, no_of_pages) => {
+  const start_payment = async (amount, id, printer_name, server_name, no_of_pages,file_name) => {
     const res = await loadRazorpay();
     if (!res) {
       alert("Some error occured from your side!! please reload the site");
@@ -81,6 +105,11 @@ function Home() {
           });
 
           if (response2.data.event === "successful") {
+            const ids = localStorage.getItem("file_ids");
+          console.log(ids);
+            const data = JSON.parse(ids);
+            data.push(id);
+            localStorage.setItem("file_ids",JSON.stringify(data));
             navigate(`/print-status?printer_name=${printer_name}&file_id=${id}&xxd=${no_of_pages}&xxy=${orderResponse.data.amount}`)
           }
         } catch (err) {
@@ -104,9 +133,14 @@ function Home() {
   const handleFileUpload = (e) => {
     console.log(file);
 
-    setFile(e.target.files[0]);
+    const selectedFile = e.target.files[0];
+    setFile(selectedFile);
+    
+    // Create object URL for the file
+    const url = URL.createObjectURL(selectedFile);
+    setFileUrl(url);
+    
     e.target.value = null;
-
   }
 
   const clickHandler = (type_of_file) => {
@@ -118,11 +152,11 @@ function Home() {
   }
 
   return <>
-    <div className={styles.container} style={{ userSelect: "none", backgroundColor: "#222222" }}>
+    <div className={styles.container} style={{ userSelect: "none" }}>
       <div className={styles.heading}>
 
         <h1 >
-          Welcome to,
+          Welcome to
         </h1>
 
         <h1 className={styles.headingText}>
@@ -131,19 +165,19 @@ function Home() {
 
       </div>
       {
-        file === null ?
+        file === null?
 
           <div className={styles.mainBody} >
-            <h2 className={styles.choose_file_heading} >Choose a file to print:</h2>
-            <div style={{ display: 'flex', justifyContent: 'center', flexDirection: "column", width: '100%' }}>
-              <div className={styles.mainBodyItemCard} onClick={() => clickHandler(".pdf")}><img src={pdfImage} alt="" style={{ width: "100%", height: "100%" }} />
+            <h2 className={styles.choose_file_heading} >Choose a file to print</h2>
+            <div style={{ display: 'flex', justifyContent: 'center', flexDirection: "column", alignItems: 'center', width: '100%', gap: '15px' }}>
+              <div className={styles.mainBodyItemCard} onClick={() => clickHandler(".pdf")}><img src={pdfImage} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
               </div>
               <div className={styles.mainBodyItemCard} onClick={() => clickHandler(".doc,.docx")}>
-                <img src={docImage} alt="" style={{ width: "100%", height: "100%" }} />
+                <img src={docImage} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
               </div>
 
               <div className={styles.mainBodyItemCard} onClick={() => clickHandler(".jpg,.png,.jpeg,.webp")}>
-                <img src={imgImage} alt="" style={{ width: "100%", height: "100%" }} />
+                <img src={imgImage} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
               </div>
 
 
@@ -151,19 +185,28 @@ function Home() {
             <button className={styles.choose_button} onClick={() => clickHandler("*")}>Choose Recent File</button>
 
           </div>
-          :
-          <div style={{ display: 'flex', justifyContent: 'center', flexDirection: 'column', alignItems: 'center' }}>
-            <h3 style={{ alignSelf: 'center', color: "orange", textDecoration: 'underline' }} onClick={() => { setDialogOpen(true) }}>{file.name}</h3>
+          :<>
+          <div style={{ display: 'flex', justifyContent: 'center', flexDirection: 'column', alignItems: 'center', gap: '20px' }}>
+            <h5 style={{color:"whitesmoke"}}>your file:</h5>
+            <span className={styles.fileName} onClick={() => { 
+              setShowFileContent(!showFileContent)
+               }}>{file.name}</span>
             <div>
-              <button className={styles.uploadingButtons} style={{ backgroundColor: "green" }} onClick={uploadFile}>Upload</button>
-              <button className={styles.uploadingButtons} style={{ backgroundColor: "red" }} onClick={() => { setFile(null); }}>Cancel</button>
+              <button className={styles.uploadingButtons} style={{ background: "linear-gradient(135deg, #059669, #10b981)" }} onClick={uploadFile}>Upload</button>
+              <button className={styles.uploadingButtons} style={{ background: "linear-gradient(135deg, #dc2626, #ef4444)" }} onClick={() => { 
+                setFile(null);
+                setShowFileContent(false);
+                if(fileUrl) URL.revokeObjectURL(fileUrl);
+                setFileUrl("");
+              }}>Cancel</button>
             </div>
           </div>
+     <FileViewModal file={{name: file?.name, url: fileUrl}} setMode={setShowFileContent} dialogMode={showFileContent} />
+</>
       }
       <input type="file" style={{ display: "none" }} ref={inputRef} onChange={handleFileUpload} />
 
     </div>
-    <FileViewModal file={file} setMode={setDialogOpen} dialogMode={dialogOpen} />
     <Toaster position="bottom-center" />
   </>
 }

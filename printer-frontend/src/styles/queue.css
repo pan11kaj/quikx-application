@@ -238,33 +238,30 @@ body {
 
 .pulse-left-arrow {
   position: relative;
-  width: 18px;
-  height: 18px;
+  width: 24px;
+  height: 24px;
   display: flex;
   align-items: center;
   justify-content: center;
+  cursor: pointer;
+  animation: pulseLeftArrowMove 1.2s ease-in-out infinite;
 }
 
 .pulse-left-arrow::before {
   content: '';
   position: absolute;
-  left: 2px;
-  width: 12px;
-  height: 2px;
-  background: var(--color-pulse);
-  animation: leftArrowSlide 1.4s ease-in-out infinite;
+  left: 50%;
+  top: 50%;
+  width: 14px;
+  height: 14px;
+  border-left: 2px solid var(--color-pulse);
+  border-bottom: 2px solid var(--color-pulse);
+  border-radius: 1px;
+  transform: translate(-50%, -50%) rotate(45deg);
 }
 
 .pulse-left-arrow::after {
-  content: '';
-  position: absolute;
-  left: 2px;
-  width: 8px;
-  height: 8px;
-  border-left: 2px solid var(--color-pulse);
-  border-bottom: 2px solid var(--color-pulse);
-  transform: translate(-3px, 0) rotate(45deg);
-  animation: leftArrowSlide 1.4s ease-in-out infinite;
+  content: none;
 }
 
 .pulse-dot {
@@ -392,6 +389,63 @@ body {
   }
 }
 
+@keyframes pulseLeftArrowMove {
+  0% {
+    transform: translateX(-6px);
+  }
+  50% {
+    transform: translateX(6px);
+  }
+  100% {
+    transform: translateX(-6px);
+  }
+}
+
+@keyframes leftArrowSlide {
+  0% {
+    transform: translateX(2px);
+    opacity: 0.65;
+  }
+  50% {
+    transform: translateX(-3px);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(2px);
+    opacity: 0.65;
+  }
+}
+
+@keyframes pulseLeftArrow {
+  0% {
+    transform: translate(-50%, -50%) rotate(45deg) translateX(-8px);
+    opacity: 1;
+  }
+  50% {
+    transform: translate(-50%, -50%) rotate(45deg) translateX(0);
+    opacity: 0.7;
+  }
+  100% {
+    transform: translate(-50%, -50%) rotate(45deg) translateX(8px);
+    opacity: 0;
+  }
+}
+
+@keyframes pulseLeftArrowOuter {
+  0% {
+    transform: translate(-50%, -50%) rotate(45deg) translateX(-8px) scale(1.2);
+    opacity: 0;
+  }
+  50% {
+    transform: translate(-50%, -50%) rotate(45deg) translateX(0) scale(1);
+    opacity: 0.3;
+  }
+  100% {
+    transform: translate(-50%, -50%) rotate(45deg) translateX(8px) scale(0.8);
+    opacity: 0;
+  }
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
   .queue-header {
@@ -449,7 +503,7 @@ body {
   }
 
   .position-number {
-    font-size: 1.1rem;
+    font-size: 1.4rem;
   }
 }
 

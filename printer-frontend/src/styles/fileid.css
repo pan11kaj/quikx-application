@@ -1,0 +1,174 @@
+.fileid-container {
+  background: #000000;
+  min-height: 100vh;
+  padding: 40px 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+.fileid-container::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -50%;
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  pointer-events: none;
+}
+
+.fileid-wrapper {
+  max-width: 1200px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+}
+
+.fileid-title {
+  text-align: center;
+  font-size: 3rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #0d6efd 0%, #0dcaf0 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 50px;
+  letter-spacing: -1px;
+}
+
+.fileid-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 25px;
+}
+
+.fileid-card {
+  background: linear-gradient(135deg, #1e1e2e 0%, #16213e 100%);
+  border: 2px solid rgba(13, 110, 253, 0.2);
+  border-radius: 12px;
+  padding: 30px;
+  text-align: center;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.fileid-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: transparent;
+}
+
+.fileid-card:hover::before {
+  left: 100%;
+}
+
+.fileid-card:hover {
+  transform: none;
+  border-color: rgba(13, 110, 253, 0.6);
+  box-shadow: 0 12px 35px rgba(13, 110, 253, 0.2),
+              0 0 40px rgba(13, 110, 253, 0.15);
+  background: linear-gradient(135deg, #262636 0%, #1a2a4e 100%);
+}
+
+.fileid-number {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #0dcaf0;
+  margin-bottom: 10px;
+  letter-spacing: -0.5px;
+  font-family: 'Courier New', monospace;
+}
+
+.fileid-index {
+  font-size: 0.9rem;
+  color: #7a7a7a;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  font-weight: 600;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: #7a7a7a;
+}
+
+.empty-state p {
+  font-size: 1.2rem;
+  font-weight: 500;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .fileid-title {
+    font-size: 2.2rem;
+    margin-bottom: 35px;
+  }
+
+  .fileid-grid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 18px;
+  }
+
+  .fileid-card {
+    padding: 25px;
+  }
+
+  .fileid-number {
+    font-size: 2rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .fileid-container {
+    padding: 20px 15px;
+  }
+
+  .fileid-title {
+    font-size: 1.8rem;
+    margin-bottom: 25px;
+  }
+
+  .fileid-grid {
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 15px;
+  }
+
+  .fileid-card {
+    padding: 20px 15px;
+    border-radius: 10px;
+  }
+
+  .fileid-number {
+    font-size: 1.6rem;
+  }
+
+  .fileid-index {
+    font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 360px) {
+  .fileid-title {
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+  }
+
+  .fileid-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .fileid-card {
+    padding: 15px 10px;
+  }
+
+  .fileid-number {
+    font-size: 1.4rem;
+  }
+}

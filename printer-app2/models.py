@@ -20,4 +20,18 @@ class Uploaded_Files(SQLModel, table=True):
     payment_id:str = Field(default="NOT INITIATED",nullable=False)
     printer_name:str
     status:str
-    
+    time_and_date:datetime = Field(default_factory=datetime.now)
+
+class Sirpur_Review(SQLModel, table=True):
+    sno:int = Field(default=None,primary_key=True)
+    name:str = Field(nullable=False)
+    email:str = Field(nullable=False) # set by user
+    feedback:str = Field(nullable=False)
+    suggestion:str = Field(nullable=False)
+    date:datetime = Field(default_factory=datetime.now)
+
+class Sirpur_Report(SQLModel, table=True):
+    sno:int = Field(default=None,primary_key=True)
+    file_id:str = Field(nullable=False)
+    problem:str = Field(nullable=False)
+    phone:str = Field(nullable=False)
